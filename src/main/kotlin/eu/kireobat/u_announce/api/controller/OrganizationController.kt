@@ -3,11 +3,14 @@ package eu.kireobat.u_announce.api.controller
 import eu.kireobat.u_announce.api.dto.CreateOrganizationDto
 import eu.kireobat.u_announce.api.dto.UAnnounceResponseDto
 import eu.kireobat.u_announce.api.dto.validate
+import eu.kireobat.u_announce.persistence.entity.OrganizationEntity
 import eu.kireobat.u_announce.service.OrganizationService
 import eu.kireobat.u_announce.util.AuthUtil
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -31,5 +34,10 @@ class OrganizationController(
         return ResponseEntity.ok(UAnnounceResponseDto(true, ZonedDateTime.now(), HttpStatus.CREATED, "Organization created"))
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/organizations/{orgId}")
+    fun getOrganization(@PathVariable orgId: Long): OrganizationEntity {
+        return organizationService.getOrganization(orgId, AuthUtil().getUserIdFromAuth())
 
+    }
 }

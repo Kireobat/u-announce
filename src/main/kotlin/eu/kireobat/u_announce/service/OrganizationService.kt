@@ -5,10 +5,13 @@ import eu.kireobat.u_announce.api.dto.getSlug
 import eu.kireobat.u_announce.api.dto.validate
 import eu.kireobat.u_announce.persistence.entity.OrganizationEntity
 import eu.kireobat.u_announce.persistence.repo.OrganizationRepo
+import jakarta.ws.rs.NotFoundException
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.GroupRepresentation
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 
 @Service
 class OrganizationService(
@@ -49,5 +52,22 @@ class OrganizationService(
             keycloakGroupId = newGroupId
             keycloakCreatedByUserId = userId
         })
+    }
+
+    fun getOrganization(orgId: Long, userId: String): OrganizationEntity {
+
+        val organizationEntity = organizationRepo.findById(orgId).orElseThrow { throw NotFoundException("Could not find organization with id ($orgId)") }
+
+        if (isInOrganization(organizationEntity, userId)) {
+            return organizationEntity
+        } else {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "You are not in this groups")
+        }
+    }
+
+    fun isInOrganization(organizationEntity: OrganizationEntity, userId: String): Boolean {
+        return realm.users().get(userId).groups()
+            .filter {groupRepresentation ->
+                groupRepresentation.id == organizationEntity.keycloakGroupId}.size == 1
     }
 }
