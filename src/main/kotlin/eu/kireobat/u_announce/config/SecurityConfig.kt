@@ -1,6 +1,6 @@
 package eu.kireobat.u_announce.config
 
-
+import org.hibernate.internal.util.collections.CollectionHelper.listOf
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,6 +29,9 @@ class SecurityConfig {
                 auth
                     .anyRequest().permitAll()
             }
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.jwt {jwt -> {} }
+            }
             .csrf { csrf ->
                 csrf.disable()
             }
@@ -39,12 +42,13 @@ class SecurityConfig {
     }
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        val config = CorsConfiguration().apply {
-            allowedOrigins = listOf(apiPath, frontendPath)
-            allowedMethods = listOf("*")
-            allowedHeaders = listOf("*")
-            allowCredentials = true
-        }
+        val config = CorsConfiguration()
+
+        config.allowedOrigins = listOf(apiPath, frontendPath)
+        config.allowedMethods = listOf("*")
+        config.allowedHeaders = listOf("*")
+        config.allowCredentials = true
+
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", config)
         return source
