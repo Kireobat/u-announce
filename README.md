@@ -1,5 +1,35 @@
 # uAnnounce
 
+## Local development
+
+### Prerequisites
+
+#### Devtools
+
+- Kotlin 2.2.0
+- Java 21
+- Maven 3.9.10
+- Docker
+
+#### Other infrastructure
+
+- Keycloak
+- MinIO
+
+### Steps
+
+1. Env variables
+
+You need to create a `.env` file with the following variables in the root project folder
+
+```dotenv
+U_ANNOUNCE_KEYCLOAK_CLIENT_ID=
+U_ANNOUNCE_KEYCLOAK_CLIENT_SECRET=
+```
+
+If you use IntelliJ IDEA it may be necessary to download a plugin called [EnvFile](https://plugins.jetbrains.com/plugin/7861-envfile) and edit your Run/Debug configuration to use the `.env` file
+
+
 ## ideas
 
 - invite to org

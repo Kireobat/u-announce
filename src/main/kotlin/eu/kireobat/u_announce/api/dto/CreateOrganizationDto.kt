@@ -10,6 +10,8 @@ data class CreateOrganizationDto (
 
 fun CreateOrganizationDto.validate() {
     require(displayName.isNotBlank()) { "Organization name must not be blank" }
+    require(displayName.length < 256) { "Organization name cannot be more than 256 chars" }
+    require(displayName.length > 3) { "Organization name cannot be less than 3 chars" }
 }
 
 fun CreateOrganizationDto.getSlug(): String {
