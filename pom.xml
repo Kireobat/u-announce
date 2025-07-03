@@ -44,6 +44,7 @@
 		<jackson-module-kotlin.version>2.19.1</jackson-module-kotlin.version>
 		<postgresql.version>42.7.7</postgresql.version>
 		<spring-security.version>6.5.1</spring-security.version>
+		<keycloak-admin.version>26.0.5</keycloak-admin.version>
 	</properties>
 	<dependencies>
 		<!-- Kotlin -->
@@ -162,6 +163,7 @@
 			<scope>test</scope>
 			<version>${spring-boot.version}</version>
 		</dependency>
+		<!-- Swagger/OpenAPI dependencies -->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-annotations</artifactId>
@@ -178,6 +180,8 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.7.0</version>
 		</dependency>
+
+		<!-- Flyway for database migrations -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
@@ -188,6 +192,27 @@
 			<artifactId>flyway-database-postgresql</artifactId>
 			<version>${flyway.version}</version>
 		</dependency>
+
+		<!-- Keycloak Admin Client -->
+		<dependency>
+			<groupId>org.keycloak</groupId>
+			<artifactId>keycloak-admin-client</artifactId>
+			<version>${keycloak-admin.version}</version>
+		</dependency>
+
+		<!-- text processing -->
+		<dependency>
+			<groupId>com.github.slugify</groupId>
+			<artifactId>slugify</artifactId>
+			<version>3.0.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>77.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -201,9 +226,11 @@
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
 				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
 				<configuration>
 					<args>
 						<arg>-Xjsr305=strict</arg>
+						<arg>-Xannotation-default-target=param-property</arg>
 					</args>
 					<compilerPlugins>
 						<plugin>spring</plugin>

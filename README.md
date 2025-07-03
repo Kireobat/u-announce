@@ -1,1 +1,48 @@
 # uAnnounce
+
+## ideas
+
+- invite to org
+  - invite link that expires after x days or x uses
+  - when creating link have option "verify: boolean" if users clicking link need to be accepted by org admins
+- better error handling
+- new tables
+  - media_type
+    - id bigserial primary key
+    - name varchar not null --eg. "JPEG"
+    - accepted_formats jsonb --string[] eg. [".jpg",".jpeg",".jpe",".jif",".jfif",".jfi"]
+  - media (configurable constraints (temporary storage, last 10 rows, max size))
+    - id bigserial primary key
+    - media_type_id biginteger references u_announce.media_type(id) not null
+    - storage_path varchar not null --url to minio thing?
+    - organization_id biginteger references u_announce.organization(id) not null
+    - keycloak_created_by_user_id varchar not null
+    - created_time timestamptz not null
+  - platform
+    - id bigserial primary key
+    - platform_name varchar not null
+  - platform_map_media_type
+    - id bigserial primary key
+    - platform_id biginteger references u_announce.platform(id) not null
+    - media_type_id biginteger references u_announce.media_type(id) not null
+  - announcement
+    - id bigserial primary key
+    - organization_id biginteger references u_announce.organization(id) not null
+    - keycloak_created_by_user_id varchar not null
+    - created_time timestamptz not null
+  - announcement_map_platform
+    - id bigserial primary key
+    - announcement_id biginteger references u_announce.announcement(id) not null
+    - platform_id biginteger references u_announce.platform(id) not null
+  - announcement_map_media
+      - id bigserial primary key
+      - announcement_id biginteger references u_announce.announcement(id) not null
+      - media_id biginteger references u_announce.media(id) not null
+  - secrets UNIQUE(organization_id, platform_id)
+    - id bigserial primary key
+    - organization_id biginteger references u_announce.organization(id) not null
+    - platform_id biginteger references u_announce.platform(id) not null
+    - client_id varchar not null --encrypted
+    - client_secret varchar not null --encrypted
+    - keycloak_created_by_user_id varchar not null
+    - created_time timestamptz not null
