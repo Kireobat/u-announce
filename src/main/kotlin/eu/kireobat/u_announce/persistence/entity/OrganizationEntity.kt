@@ -12,8 +12,8 @@ import java.time.ZonedDateTime
 @Table(name = "organization")
 data class OrganizationEntity (
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "organizationSeq")
-    @SequenceGenerator(name = "organizationSeq", sequenceName = "organization_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "organizationIdSeq")
+    @SequenceGenerator(name = "organizationIdSeq", sequenceName = "organization_id_seq", allocationSize = 1)
     var id: Long = 0L,
 
     var slug: String = "",

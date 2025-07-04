@@ -11,8 +11,8 @@ import jakarta.persistence.Table
 @Table(name = "platform")
 data class PlatformEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "platformSeq")
-    @SequenceGenerator(name = "platformSeq", sequenceName = "platform_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "platformIdSeq")
+    @SequenceGenerator(name = "platformIdSeq", sequenceName = "platform_id_seq", allocationSize = 1)
     var id: Long = 0L,
 
     var slug: String = "",

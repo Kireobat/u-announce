@@ -6,5 +6,3 @@ CREATE TABLE u_announce.secret (
     keycloak_created_by_user_id varchar not null,
     created_time timestamptz not null
 );
-
-CREATE SEQUENCE u_announce.secret_seq increment by 1 start with 1;

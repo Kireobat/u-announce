@@ -5,7 +5,6 @@ import eu.kireobat.u_announce.api.dto.getSlug
 import eu.kireobat.u_announce.api.dto.validate
 import eu.kireobat.u_announce.persistence.entity.OrganizationEntity
 import eu.kireobat.u_announce.persistence.repo.OrganizationRepo
-import jakarta.ws.rs.NotFoundException
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.GroupRepresentation
 import org.springframework.beans.factory.annotation.Value
@@ -73,7 +72,7 @@ class OrganizationService(
 
     fun getOrganization(orgId: Long, userId: String): OrganizationEntity {
 
-        val organizationEntity = organizationRepo.findById(orgId).orElseThrow { throw NotFoundException("Could not find organization with id ($orgId)") }
+        val organizationEntity = organizationRepo.findById(orgId).orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND,"Could not find organization with id ($orgId)") }
 
         if (isInOrganization(organizationEntity, userId)) {
             return organizationEntity

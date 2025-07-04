@@ -2,11 +2,11 @@ package eu.kireobat.u_announce.service
 
 import eu.kireobat.u_announce.api.dto.CreateSecretDto
 import eu.kireobat.u_announce.api.dto.SecretDto
-import eu.kireobat.u_announce.common.credentials.Discord
 import eu.kireobat.u_announce.persistence.entity.SecretEntity
 import eu.kireobat.u_announce.persistence.repo.SecretRepo
-import jakarta.ws.rs.NotFoundException
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import javax.crypto.spec.SecretKeySpec
 
 @Service
@@ -46,7 +46,11 @@ class SecretService(
     }
 
     fun getSecret(secretId: Long, userId: String): SecretDto {
-        val secretEntity = secretRepo.findById(secretId).orElseThrow { throw NotFoundException("Could not find secret with id ($secretId)") }
+        val secretEntity = secretRepo.findById(secretId).orElseThrow { throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Could not find secret with id ($secretId)"
+        )
+        }
 
         val organizationEntity = organizationService.getOrganization(secretEntity.organizationId, userId)
 

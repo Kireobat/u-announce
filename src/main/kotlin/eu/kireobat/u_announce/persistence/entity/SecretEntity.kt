@@ -12,8 +12,8 @@ import java.time.ZonedDateTime
 @Table(name = "secret")
 data class SecretEntity (
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "secretSeq")
-    @SequenceGenerator(name = "secretSeq", sequenceName = "secret_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "secretIdSeq")
+    @SequenceGenerator(name = "secretIdSeq", sequenceName = "secret_id_seq", allocationSize = 1)
     var id: Long = 0L,
 
     var organizationId: Long = 0L,
