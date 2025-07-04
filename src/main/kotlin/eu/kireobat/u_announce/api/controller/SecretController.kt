@@ -30,6 +30,6 @@ class SecretController(private val secretService: SecretService) {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/secrets/{secretId}")
     fun getSecret(@PathVariable secretId: Long): ResponseEntity<SecretDto> {
-        return ResponseEntity.ok(secretService.getSecret(secretId, AuthUtil().getUserIdFromAuth()))
+        return ResponseEntity.ok(secretService.getSecretById(secretId, AuthUtil().getUserIdFromAuth()))
     }
 }

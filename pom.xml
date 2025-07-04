@@ -45,6 +45,10 @@
 		<postgresql.version>42.7.7</postgresql.version>
 		<spring-security.version>6.5.1</spring-security.version>
 		<keycloak-admin.version>26.0.5</keycloak-admin.version>
+		<kord.version>0.15.0</kord.version>
+		<slugify.version>3.0.7</slugify.version>
+		<ibm-icu4j.version>77.1</ibm-icu4j.version>
+		<kotlinx-coroutines.version>1.10.2</kotlinx-coroutines.version>
 	</properties>
 	<dependencies>
 		<!-- Kotlin -->
@@ -209,15 +213,31 @@
 		<dependency>
 			<groupId>com.github.slugify</groupId>
 			<artifactId>slugify</artifactId>
-			<version>3.0.7</version>
+			<version>${slugify.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>77.1</version>
+			<version>${ibm-icu4j.version}</version>
 		</dependency>
 
+		<!-- Coroutines -->
+
+
+		<dependency>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-core</artifactId>
+			<version>${kotlinx-coroutines.version}</version>
+		</dependency>
+
+		<!-- Discord Integration -->
+
+		<dependency>
+			<groupId>dev.kord</groupId>
+			<artifactId>kord-core</artifactId>
+			<version>${kord.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

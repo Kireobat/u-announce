@@ -45,13 +45,30 @@ class SecretService(
         }
     }
 
-    fun getSecret(secretId: Long, userId: String): SecretDto {
+    fun getSecretByPlatformAndOrg(platformId: Long, orgId: Long, userId: String): SecretDto {
+        val organizationEntity = organizationService.getOrganization(orgId, userId)
+        val platformEntity = platformService.getPlatform(platformId)
+
+        val secretEntity = secretRepo.findByOrganizationIdAndPlatformId(organizationEntity.id,platformEntity.id).orElseThrow { throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "Organization '${organizationEntity.displayName}' does not have a secret for platform '${platformEntity.displayName}'"
+        )
+        }
+
+        return getSecret(secretEntity, userId)
+    }
+
+    fun getSecretById(secretId: Long, userId: String): SecretDto {
         val secretEntity = secretRepo.findById(secretId).orElseThrow { throw ResponseStatusException(
             HttpStatus.NOT_FOUND,
             "Could not find secret with id ($secretId)"
         )
         }
 
+        return getSecret(secretEntity, userId)
+    }
+
+    private fun getSecret(secretEntity: SecretEntity, userId: String): SecretDto {
         val organizationEntity = organizationService.getOrganization(secretEntity.organizationId, userId)
 
         val platformEntity = platformService.getPlatform(secretEntity.platformId)
