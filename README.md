@@ -1,5 +1,21 @@
 # uAnnounce
 
+## Table of Contents
+
+- [uAnnounce](#uannounce)
+  - [Table of Contents](#table-of-contents)
+  - [Local development](#local-development)
+    - [Prerequisites](#prerequisites)
+      - [Devtools](#devtools)
+      - [Other software needed](#other-software-needed)
+    - [Steps](#steps)
+      - [Environment variables](#environment-variables)
+    - [Add support for new platforms](#add-support-for-new-platforms)
+      - [Create a new data class](#create-a-new-data-class)
+      - [Update the platform table](#update-the-platform-table)
+      - [Write other code](#write-other-code)
+  - [ideas](#ideas)
+
 ## Local development
 
 ### Prerequisites
@@ -11,24 +27,55 @@
 - Maven 3.9.10
 - Docker
 
-#### Other infrastructure
+#### Other software needed
 
 - Keycloak
 - MinIO
 
 ### Steps
 
-1. Env variables
+#### Environment variables
 
 You need to create a `.env` file with the following variables in the root project folder
 
 ```dotenv
 U_ANNOUNCE_KEYCLOAK_CLIENT_ID=
 U_ANNOUNCE_KEYCLOAK_CLIENT_SECRET=
+U_ANNOUNCE_MASTER_KEY=
 ```
 
 If you use IntelliJ IDEA it may be necessary to download a plugin called [EnvFile](https://plugins.jetbrains.com/plugin/7861-envfile) and edit your Run/Debug configuration to use the `.env` file
 
+### Add support for new platforms
+
+If you want to contribute by adding support for other platforms you'll need to do the following in addition to writing the integration
+
+#### Create a new data class
+
+Create an object like this in `eu.kireobat.u_announce.common.credentials`:
+
+```kotlin
+package eu.kireobat.u_announce.common.credentials
+
+data class YourPlatform(
+    val yourToken: String,
+    // other fields...
+): Credentials
+```
+
+It must extend the `Credentials` sealed interface to work
+
+#### Update the platform table
+
+Add a migration file i.e. `V1_0_X__add_support_for_platform`
+
+```sql
+insert into u_announce.platform (slug, display_name, class_name) values ('your-platform', 'Your Platform', 'eu.kireobat.u_announce.common.credentials.YourPlatform');
+```
+
+#### Write other code
+
+Now you are ready to write the rest of your new integration
 
 ## ideas
 
@@ -48,9 +95,6 @@ If you use IntelliJ IDEA it may be necessary to download a plugin called [EnvFil
     - organization_id biginteger references u_announce.organization(id) not null
     - keycloak_created_by_user_id varchar not null
     - created_time timestamptz not null
-  - platform
-    - id bigserial primary key
-    - platform_name varchar not null
   - platform_map_media_type
     - id bigserial primary key
     - platform_id biginteger references u_announce.platform(id) not null
@@ -68,11 +112,3 @@ If you use IntelliJ IDEA it may be necessary to download a plugin called [EnvFil
       - id bigserial primary key
       - announcement_id biginteger references u_announce.announcement(id) not null
       - media_id biginteger references u_announce.media(id) not null
-  - secrets UNIQUE(organization_id, platform_id)
-    - id bigserial primary key
-    - organization_id biginteger references u_announce.organization(id) not null
-    - platform_id biginteger references u_announce.platform(id) not null
-    - client_id varchar not null --encrypted
-    - client_secret varchar not null --encrypted
-    - keycloak_created_by_user_id varchar not null
-    - created_time timestamptz not null

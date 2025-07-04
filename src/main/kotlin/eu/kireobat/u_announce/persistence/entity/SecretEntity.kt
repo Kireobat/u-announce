@@ -9,20 +9,18 @@ import jakarta.persistence.Table
 import java.time.ZonedDateTime
 
 @Entity
-@Table(name = "organization")
-data class OrganizationEntity (
+@Table(name = "secret")
+data class SecretEntity (
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "organizationIdSeq")
-    @SequenceGenerator(name = "organizationIdSeq", sequenceName = "organization_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "secretIdSeq")
+    @SequenceGenerator(name = "secretIdSeq", sequenceName = "secret_id_seq", allocationSize = 1)
     var id: Long = 0L,
 
-    var slug: String = "",
+    var organizationId: Long = 0L,
 
-    var displayName: String = "",
+    var platformId: Long = 0L,
 
-    var organizationKey: ByteArray = ByteArray(0),
-
-    var keycloakGroupId: String = "",
+    var encryptedCredential: ByteArray = ByteArray(0),
 
     var keycloakCreatedByUserId: String = "",
 

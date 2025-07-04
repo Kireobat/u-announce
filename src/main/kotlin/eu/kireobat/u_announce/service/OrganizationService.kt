@@ -5,18 +5,19 @@ import eu.kireobat.u_announce.api.dto.getSlug
 import eu.kireobat.u_announce.api.dto.validate
 import eu.kireobat.u_announce.persistence.entity.OrganizationEntity
 import eu.kireobat.u_announce.persistence.repo.OrganizationRepo
-import jakarta.ws.rs.NotFoundException
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.GroupRepresentation
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.security.SecureRandom
 
 @Service
 class OrganizationService(
     private val realm: RealmResource,
     private val organizationRepo: OrganizationRepo,
+    private val encryptionService: EncryptionService,
 ) {
 
     @Value($$"${roles.org-admin}")
@@ -46,22 +47,37 @@ class OrganizationService(
         val orgAdminRole = realm.roles().get(orgAdmin).toRepresentation()
         realm.users().get(userId).roles().realmLevel().add(listOf(orgAdminRole))
 
-        organizationRepo.saveAndFlush(OrganizationEntity().apply {
-            slug = generatedSlug
-            displayName = createOrganizationDto.displayName
-            keycloakGroupId = newGroupId
-            keycloakCreatedByUserId = userId
-        })
+        // generate organization key
+        val secureRandom = SecureRandom()
+        val newOrganizationKey = ByteArray(32)
+
+        try {
+            secureRandom.nextBytes(newOrganizationKey)
+
+            val encryptedOrganizationKey = encryptionService.encrypt(newOrganizationKey)
+
+            organizationRepo.saveAndFlush(OrganizationEntity().apply {
+                slug = generatedSlug
+                displayName = createOrganizationDto.displayName
+                organizationKey = encryptedOrganizationKey
+                keycloakGroupId = newGroupId
+                keycloakCreatedByUserId = userId
+            })
+        } finally {
+            // Overwrite the plaintext key with zeros
+            newOrganizationKey.fill(0)
+        }
+
     }
 
     fun getOrganization(orgId: Long, userId: String): OrganizationEntity {
 
-        val organizationEntity = organizationRepo.findById(orgId).orElseThrow { throw NotFoundException("Could not find organization with id ($orgId)") }
+        val organizationEntity = organizationRepo.findById(orgId).orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND,"Could not find organization with id ($orgId)") }
 
         if (isInOrganization(organizationEntity, userId)) {
             return organizationEntity
         } else {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "You are not in this groups")
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this organization ($orgId)")
         }
     }
 
