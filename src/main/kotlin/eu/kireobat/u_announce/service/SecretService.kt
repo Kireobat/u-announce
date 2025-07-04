@@ -1,5 +1,6 @@
 package eu.kireobat.u_announce.service
 
+import eu.kireobat.u_announce.api.dto.CreateIntegrationStatusDto
 import eu.kireobat.u_announce.api.dto.CreateSecretDto
 import eu.kireobat.u_announce.api.dto.SecretDto
 import eu.kireobat.u_announce.persistence.entity.SecretEntity
@@ -15,7 +16,8 @@ class SecretService(
     private val encryptionService: EncryptionService,
     private val platformService: PlatformService,
     private val secretRepo: SecretRepo,
-    private val credentialService: CredentialService
+    private val credentialService: CredentialService,
+    private val integrationStatusService: IntegrationStatusService
 ) {
 
     fun createSecret(createSecretDto: CreateSecretDto, userId: String) {
@@ -42,6 +44,8 @@ class SecretService(
             })
         } finally {
             plaintextOrgKey.fill(0)
+
+            integrationStatusService.setupIntegrationStatus(CreateIntegrationStatusDto(organizationEntity.id, platformEntity.id, true ), userId)
         }
     }
 
