@@ -1,0 +1,1 @@
+insert into u_announce.platform (slug, display_name, class_name) values ('discord', 'Discord', 'eu.kireobat.u_announce.common.credentials.Discord');
