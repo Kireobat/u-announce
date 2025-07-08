@@ -1,0 +1,189 @@
+{
+  // Basic realm configuration
+  "realm": "u-announce",
+  "enabled": true,
+  "displayName": "uAnnounce Realm",
+
+  // Token lifespans (in seconds)
+  "accessTokenLifespan": 3600,            // 1 hour
+  "refreshTokenMaxReuse": 0,
+  "offlineSessionIdleTimeout": 2592000,   // 30 days
+  "accessCodeLifespan": 60,               // 1 minute
+  "accessCodeLifespanUserAction": 300,    // 5 minutes
+
+  // Security settings - relaxed for development
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "passwordPolicy": "",                   // No password policy for dev
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": false,                   // Skip email verification in dev
+  "loginWithEmailAllowed": true,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": true,
+
+  // Define realm roles
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role",
+        "composite": false
+      },
+      {
+        "name": "user",
+        "description": "Regular user role",
+        "composite": false
+      },
+      {
+        "name": "manager",
+        "description": "Manager role",
+        "composite": false
+      },
+      {
+        "name": "org-admin",
+        "description": "Organization administrator role",
+        "composite": false
+      }
+    ]
+  },
+
+  // Client configurations
+  "clients": [
+    {
+      // Frontend client (public client for SPAs)
+      "clientId": "myapp-frontend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+
+      // Development redirect URIs
+      "redirectUris": [
+        "http://localhost:5173/*",        // Vite default
+        "http://localhost:8080/*"         // General dev
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8080"
+      ],
+
+      // Default scopes
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      // Backend client (confidential client with service account)
+      "clientId": "myapp-backend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "myapp-backend-secret",
+      "attributes": {
+        "jwt.credential.certificate": ""
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+
+  // Test users for development
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@myapp.com",
+      "firstName": "Admin",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123456",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "user"
+      ]
+    },
+    {
+      "username": "testuser",
+      "enabled": true,
+      "email": "test@myapp.com",
+      "firstName": "Test",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test123456",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    },
+    {
+      "username": "manager",
+      "enabled": true,
+      "email": "manager@myapp.com",
+      "firstName": "Manager",
+      "lastName": "User",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "manager123456",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "manager",
+        "user"
+      ]
+    }
+  ],
+
+  // Client scope mappings
+  "clientScopeMappings": {
+    "myapp-backend": [
+      {
+        "client": "myapp-backend",
+        "roles": [
+          "admin",
+          "user",
+          "manager"
+        ]
+      }
+    ]
+  }
+}
