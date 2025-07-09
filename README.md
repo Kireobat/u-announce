@@ -5,20 +5,21 @@
 - [uAnnounce](#uannounce)
   - [Table of Contents](#table-of-contents)
   - [Local development](#local-development)
-    - [Prerequisites](#prerequisites)
+    - [Prerequisite](#prerequisite)
       - [Devtools](#devtools)
       - [Other software needed](#other-software-needed)
     - [Steps](#steps)
-      - [Environment variables](#environment-variables)
     - [Add support for new platforms](#add-support-for-new-platforms)
       - [Create a new data class](#create-a-new-data-class)
       - [Update the platform table](#update-the-platform-table)
       - [Write other code](#write-other-code)
+  - [Running in prod](#running-in-prod)
+    - [Docker](#docker)
   - [ideas](#ideas)
 
 ## Local development
 
-### Prerequisites
+### Prerequisite
 
 #### Devtools
 
@@ -34,21 +35,15 @@
 
 ### Steps
 
-`docker-compose -f .\docker-compose-local.yml up --build`
+This program uses spring-docker-compose, so as long as you have docker you should only need to click run or run `mvn spring-boot:run` in your cli.
 
-`docker-compose -f .\docker-compose-local.yml down`
+However, if you only want to start the docker containers, it can be done like this:
 
-#### Environment variables
+To create and start: `docker-compose -f .\docker-compose-local.yml up --build`
 
-You need to create a `.env` file with the following variables in the root project folder
+To stop and remove: `docker-compose -f .\docker-compose-local.yml down`
 
-```dotenv
-U_ANNOUNCE_KEYCLOAK_CLIENT_ID=
-U_ANNOUNCE_KEYCLOAK_CLIENT_SECRET=
-U_ANNOUNCE_MASTER_KEY=
-```
-
-If you use IntelliJ IDEA it may be necessary to download a plugin called [EnvFile](https://plugins.jetbrains.com/plugin/7861-envfile) and edit your Run/Debug configuration to use the `.env` file
+No environment variables should be necessary for local development.
 
 ### Add support for new platforms
 
@@ -80,6 +75,25 @@ insert into u_announce.platform (slug, display_name, class_name) values ('your-p
 #### Write other code
 
 Now you are ready to write the rest of your new integration
+
+## Running in prod
+
+### Docker
+
+To run the program in docker with the prod profile, you will need the following variables (with example data):
+
+```dotenv
+KEYCLOAK_REALM=my-realm
+KEYCLOAK_SERVER_URL=https://keycloak.example.com
+FRONTEND_KEYCLOAK_CLIENT_ID=frontend-client-id
+FRONTEND_SERVER_URL=https://example.com
+BACKEND_KEYCLOAK_CLIENT_ID=backend-client-id
+BACKEND_KEYCLOAK_CLIENT_SECRET=verySecretSecret
+BACKEND_SERVER_URL=https://api.example.com
+MASTER_KEY=qUoQO5W7KwbCGiZh/VucOsQpdg+9B53n5VXkfMY9HF8=
+```
+
+You will also need to bind any host port to container port `8080`
 
 ## ideas
 
@@ -113,6 +127,6 @@ Now you are ready to write the rest of your new integration
     - announcement_id biginteger references u_announce.announcement(id) not null
     - platform_id biginteger references u_announce.platform(id) not null
   - announcement_map_media
-      - id bigserial primary key
-      - announcement_id biginteger references u_announce.announcement(id) not null
-      - media_id biginteger references u_announce.media(id) not null
+    - id bigserial primary key
+    - announcement_id biginteger references u_announce.announcement(id) not null
+    - media_id biginteger references u_announce.media(id) not null

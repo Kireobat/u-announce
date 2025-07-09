@@ -2,7 +2,8 @@
   // Basic realm configuration
   "realm": "u-announce",
   "enabled": true,
-  "displayName": "uAnnounce Realm",
+  "displayName": "uAnnounce",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>uAnnounce</span></div>",
 
   // Token lifespans (in seconds)
   "accessTokenLifespan": 3600,            // 1 hour
@@ -25,24 +26,11 @@
   "roles": {
     "realm": [
       {
-        "name": "admin",
-        "description": "Administrator role",
-        "composite": false
-      },
-      {
-        "name": "user",
-        "description": "Regular user role",
-        "composite": false
-      },
-      {
-        "name": "manager",
-        "description": "Manager role",
-        "composite": false
-      },
-      {
-        "name": "org-admin",
-        "description": "Organization administrator role",
-        "composite": false
+        "name": "org_admin",
+        "description": "Organization/group admin",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
       }
     ]
   },
@@ -51,7 +39,7 @@
   "clients": [
     {
       // Frontend client (public client for SPAs)
-      "clientId": "myapp-frontend",
+      "clientId": "u-announce-frontend",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,
@@ -85,8 +73,8 @@
       ]
     },
     {
-      // Backend client (confidential client with service account)
-      "clientId": "myapp-backend",
+      // Backend client (confidential client with a service account)
+      "clientId": "u-announce-backend",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
@@ -94,7 +82,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "secret": "myapp-backend-secret",
+      "secret": "u-announce-backend-secret",
       "attributes": {
         "jwt.credential.certificate": ""
       },
@@ -116,74 +104,51 @@
   // Test users for development
   "users": [
     {
-      "username": "admin",
+      "username": "service-account-u-announce",
+      "emailVerified": false,
       "enabled": true,
-      "email": "admin@myapp.com",
-      "firstName": "Admin",
-      "lastName": "User",
-      "emailVerified": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "admin123456",
-          "temporary": false
-        }
-      ],
+      "totp": false,
+      "serviceAccountClientId": "u-announce-backend",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
       "realmRoles": [
-        "admin",
-        "user"
-      ]
+        "default-roles-u-announce"
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "query-users",
+          "view-realm",
+          "manage-realm",
+          "view-users",
+          "manage-clients",
+          "query-groups",
+          "view-clients",
+          "manage-users"
+        ],
+        "account": [
+          "view-groups"
+        ]
+      },
+      "notBefore": 0,
+      "groups": []
     },
     {
-      "username": "testuser",
+      "username": "user",
       "enabled": true,
-      "email": "test@myapp.com",
-      "firstName": "Test",
+      "email": "user@user.com",
+      "firstName": "User",
       "lastName": "User",
       "emailVerified": true,
       "credentials": [
         {
           "type": "password",
-          "value": "test123456",
+          "value": "user",
           "temporary": false
         }
       ],
       "realmRoles": [
-        "user"
-      ]
-    },
-    {
-      "username": "manager",
-      "enabled": true,
-      "email": "manager@myapp.com",
-      "firstName": "Manager",
-      "lastName": "User",
-      "emailVerified": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "manager123456",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "manager",
-        "user"
+        "default-roles-u-announce"
       ]
     }
-  ],
-
-  // Client scope mappings
-  "clientScopeMappings": {
-    "myapp-backend": [
-      {
-        "client": "myapp-backend",
-        "roles": [
-          "admin",
-          "user",
-          "manager"
-        ]
-      }
-    ]
-  }
+  ]
 }
