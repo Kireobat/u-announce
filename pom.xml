@@ -45,6 +45,15 @@
 		<postgresql.version>42.7.7</postgresql.version>
 		<spring-security.version>6.5.1</spring-security.version>
 		<keycloak-admin.version>26.0.5</keycloak-admin.version>
+		<kord.version>0.13.1</kord.version>
+		<slugify.version>3.0.7</slugify.version>
+		<ibm-icu4j.version>77.1</ibm-icu4j.version>
+		<kotlinx-coroutines.version>1.7.3</kotlinx-coroutines.version>
+		<kotlinx-io.version>0.3.5</kotlinx-io.version>
+		<ktor.version>2.3.12</ktor.version>
+		<properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+		<dotenv-java.version>3.0.0</dotenv-java.version>
+        <minio-admin.version>8.5.17</minio-admin.version>
 	</properties>
 	<dependencies>
 		<!-- Kotlin -->
@@ -205,6 +214,13 @@
 			<version>${keycloak-admin.version}</version>
 		</dependency>
 
+        <!-- Minio SDK -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio-admin</artifactId>
+            <version>${minio-admin.version}</version>
+        </dependency>
+
 		<!-- text processing -->
 		<dependency>
 			<groupId>com.github.slugify</groupId>
@@ -218,6 +234,13 @@
 			<version>77.1</version>
 		</dependency>
 
+		<!-- Enviroment variables in tests -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>${dotenv-java.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

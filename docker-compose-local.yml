@@ -1,18 +1,23 @@
 services:
   postgres:
+    container_name: u-announce-postgres
     build:
       context: .
       dockerfile: ./docker/postgres/Dockerfile
     environment:
       - 'POSTGRES_PASSWORD=postgres'
-    container_name: u-announce-postgres
     ports:
       - "5432:5432"
     labels:
       org.springframework.boot.service-connection: postgres
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   keycloak:
+    container_name: u-announce-keycloak
     build:
       context: .
       dockerfile: ./docker/keycloak/Dockerfile
@@ -25,4 +30,93 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KC_HOSTNAME_STRICT_HTTPS=false
       - KC_HTTP_ENABLED=true
-    container_name: u-announce-keycloak
+    healthcheck:
+      test: [ "CMD-SHELL", "echo 'Keycloak health check starting...' && curl -f http://localhost:8080 && echo 'Health check passed' || (echo 'Health check failed' && exit 1)" ]
+      interval: 10s
+      timeout: 5s
+      retries: 50
+      start_period: 10s
+    depends_on:
+      - postgres
+
+  minio:
+    container_name: u-announce-minio
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: root1234
+
+      # Public URLs (important for console redirects and presigned URLs)
+      MINIO_SERVER_URL: http://localhost:9002
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+
+      # OIDC (Keycloak) config
+      MINIO_IDENTITY_OPENID_CONFIG_URL: http://keycloak:8080/realms/u-announce/.well-known/openid-configuration
+      MINIO_IDENTITY_OPENID_CLIENT_ID: minio
+      MINIO_IDENTITY_OPENID_CLIENT_SECRET: minio-client-secret
+      MINIO_IDENTITY_OPENID_SCOPES: openid,profile,email,groups
+      MINIO_IDENTITY_OPENID_REDIRECT_URI: http://localhost:9001/oauth_callback
+      MINIO_IDENTITY_OPENID_DISPLAY_NAME: Keycloak
+      # we set a hardcoded "policy" claim in the client above
+      MINIO_IDENTITY_OPENID_CLAIM_NAME: policy
+    ports:
+      - "9002:9000" # S3 API
+      - "9001:9001" # Web console
+    volumes:
+      - u-announce-minio-data:/data
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    command: server /data --console-address :9001
+    healthcheck:
+      test: [ "CMD-SHELL", "echo 'MinIO health check starting...' && curl -f http://localhost:9000/minio/health/live && echo 'MinIO health check passed' || (echo 'MinIO health check failed' && exit 1)" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  u-announce-minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy  # Wait for MinIO to be healthy
+    entrypoint: [ "/bin/sh","-c" ]
+    command: |
+      set -eux
+      echo "Waiting for MinIO to be ready..."
+      
+      # Register alias with retry
+      until mc alias set myminio http://minio:9000 "root" "root1234"; do
+        echo "MinIO not ready yet, waiting..."
+        sleep 5
+      done
+      
+      echo "🚀 Starting MinIO initialization..."
+      
+      # Create bucket
+      mc mb -p myminio/organizations || true
+      echo "✓ Created organizations bucket"
+      
+      # Create policies if files exist
+      if [ -f /init/policies/org-access.json ]; then
+        mc admin policy create myminio org-access /init/policies/org-access.json || true
+        echo "✓ Created org-access policy"
+      else
+        echo "⚠️  Policy file /init/policies/org-access.json not found"
+      fi
+      
+      if [ -f /init/policies/org-example-org.json ]; then
+        mc admin policy create myminio org-example-org /init/policies/org-example-org.json || true
+        echo "✓ Created org-example-org policy"
+      else
+        echo "⚠️  Policy file /init/policies/org-example-org.json not found"
+      fi
+      
+      echo "🎉 MinIO initialization completed successfully!"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: root1234
+    volumes:
+      - ./init:/init
+volumes:
+  u-announce-minio-data:

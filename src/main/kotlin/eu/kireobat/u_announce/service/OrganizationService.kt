@@ -15,13 +15,10 @@ import java.security.SecureRandom
 
 @Service
 class OrganizationService(
-    private val realm: RealmResource,
     private val organizationRepo: OrganizationRepo,
     private val encryptionService: EncryptionService,
+    private val keycloakService: KeycloakService,
 ) {
-
-    @Value($$"${roles.org-admin}")
-    private lateinit var orgAdmin: String
 
     fun createOrganization(createOrganizationDto: CreateOrganizationDto, userId: String) {
 
@@ -31,21 +28,9 @@ class OrganizationService(
 
         val generatedSlug = createOrganizationDto.getSlug()
 
-        val groupRepresentation = GroupRepresentation()
+        val optKeycloakGroupId = keycloakService.createOrganization(generatedSlug, userId)
 
-        groupRepresentation.name = "org-$generatedSlug"
-
-        val response = realm.groups().add(groupRepresentation)
-
-        if (response.status != 201) {
-            throw RuntimeException("Failed to create Keycloak group. Status: ${response.statusInfo.reasonPhrase}")
-        }
-
-        val newGroupId = response.location.path.split("/").last()
-        realm.users().get(userId).joinGroup(newGroupId)
-
-        val orgAdminRole = realm.roles().get(orgAdmin).toRepresentation()
-        realm.users().get(userId).roles().realmLevel().add(listOf(orgAdminRole))
+        require(optKeycloakGroupId.isPresent) { "Error creating organization." }
 
         // generate organization key
         val secureRandom = SecureRandom()
@@ -60,7 +45,7 @@ class OrganizationService(
                 slug = generatedSlug
                 displayName = createOrganizationDto.displayName
                 organizationKey = encryptedOrganizationKey
-                keycloakGroupId = newGroupId
+                keycloakGroupId = optKeycloakGroupId.get()
                 keycloakCreatedByUserId = userId
             })
         } finally {
@@ -82,8 +67,9 @@ class OrganizationService(
     }
 
     fun isInOrganization(organizationEntity: OrganizationEntity, userId: String): Boolean {
-        return realm.users().get(userId).groups()
-            .filter {groupRepresentation ->
-                groupRepresentation.id == organizationEntity.keycloakGroupId}.size == 1
+        return keycloakService.getGroupsForUser(userId)
+            .filter { groupRepresentation ->
+                groupRepresentation.id == organizationEntity.keycloakGroupId
+            }.size == 1
     }
 }

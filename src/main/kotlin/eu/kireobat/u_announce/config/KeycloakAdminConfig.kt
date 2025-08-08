@@ -8,6 +8,28 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
+data class KeycloakProperties(
+    var serverUrl: String = "",
+    var realm: String = "",
+    var clientId: String = "",
+    var clientSecret: String = "",
+)
+
+class KeycloakConfig( private val keycloakProperties: KeycloakProperties) {
+
+    @Bean
+    fun keycloakAdminClient(): Keycloak {
+        return KeycloakBuilder.builder()
+            .serverUrl(keycloakProperties.serverUrl)
+            .realm(keycloakProperties.realm)
+            .grantType("client_credentials")
+            .clientId(keycloakProperties.clientId)
+            .clientSecret(keycloakProperties.clientSecret)
+            .build()
+    }
+}
+
+@Configuration
 class KeycloakAdminConfig {
 
     @Value($$"${keycloak.admin.server-url}")

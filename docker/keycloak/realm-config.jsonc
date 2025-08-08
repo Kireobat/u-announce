@@ -109,6 +109,116 @@
         "microprofile-jwt",
         "organization"
       ]
+    },
+    {
+      // MinIO client
+      "clientId": "u-announce-minio",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "frontchannelLogout": false,
+
+      // Development redirect URIs
+      "redirectUris": [
+        "http://localhost:9001/*"        // Minio console
+      ],
+      "webOrigins": [
+        "http://localhost:9001"
+      ],
+
+      "secret": "u-announce-minio-secret",
+      "attributes": {
+        "jwt.credential.certificate": ""
+      },
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email",
+        "acr",
+        "basic",
+        "groups"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt",
+        "organization"
+      ],
+      "protocolMappers": [
+        {
+          "name": "minio-policy-from-groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "claim.name": "groups",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "minio",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "frontchannelLogout": false,
+
+      // change this in prod
+      "secret": "minio-client-secret",
+
+      "redirectUris": [
+        "http://localhost:9001/oauth_callback",
+        "http://minio:9001/oauth_callback"
+      ],
+      "webOrigins": [
+        "http://localhost:9001"
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email",
+        "groups"
+      ],
+      "optionalClientScopes": [
+        "offline_access",
+        "microprofile-jwt"
+      ],
+      "protocolMappers": [
+        {
+          "name": "minio-policy-console-admin",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "policy",
+            "jsonType.label": "String",
+            "claim.value": "consoleAdmin",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false"
+          }
+        }
+      ]
     }
   ],
 
@@ -161,7 +271,21 @@
       ],
       "realmRoles": [
         "default-roles-u-announce"
+      ],
+      "groups": [
+        "/org-example-org"
       ]
+    }
+  ],
+
+  "groups": [
+    {
+      "name": "org-example-org",
+      "path": "/org-example-org",
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {},
+      "subGroups": []
     }
   ],
 
