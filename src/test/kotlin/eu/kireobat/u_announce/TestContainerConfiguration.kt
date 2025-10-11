@@ -30,12 +30,12 @@ class TestContainerConfiguration {
                 .load()
 
             // Get the values more safely
-            val keycloakClientId = dotenv.get("U_ANNOUNCE_KEYCLOAK_CLIENT_ID")
-                ?: throw IllegalStateException("U_ANNOUNCE_KEYCLOAK_CLIENT_ID not found in .env file")
-            val keycloakClientSecret = dotenv.get("U_ANNOUNCE_KEYCLOAK_CLIENT_SECRET")
-                ?: throw IllegalStateException("U_ANNOUNCE_KEYCLOAK_CLIENT_SECRET not found in .env file")
-            val masterKey = dotenv.get("U_ANNOUNCE_MASTER_KEY")
-                ?: throw IllegalStateException("U_ANNOUNCE_MASTER_KEY not found in .env file")
+            val keycloakClientId = dotenv.get("BACKEND_KEYCLOAK_CLIENT_ID")
+                ?: throw IllegalStateException("BACKEND_KEYCLOAK_CLIENT_ID not found in .env file")
+            val keycloakClientSecret = dotenv.get("BACKEND_KEYCLOAK_CLIENT_SECRET")
+                ?: throw IllegalStateException("BACKEND_KEYCLOAK_CLIENT_SECRET not found in .env file")
+            val masterKey = dotenv.get("MASTER_KEY")
+                ?: throw IllegalStateException("MASTER_KEY not found in .env file")
 
             TestPropertyValues.of(
                 // flyway property overrides

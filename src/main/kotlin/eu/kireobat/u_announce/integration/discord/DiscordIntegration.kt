@@ -24,7 +24,6 @@ class DiscordIntegration(
 
     private val logger: Logger = LoggerFactory.getLogger(DiscordIntegration::class.java)
 
-
     suspend fun getOrCreateKordInstance(orgId: Long, platformId: Long, userId: String): Kord {
         val instanceKey = "orgId-$orgId--platformId-$platformId"
 
