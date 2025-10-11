@@ -9,4 +9,5 @@ import java.util.Optional
 @Repository
 interface IntegrationStatusRepo: JpaRepository<IntegrationStatusEntity, Long> {
     fun findByOrganizationIdAndPlatformIdAndActiveTrue(organizationId: Long, platformId: Long): Optional<IntegrationStatusEntity>
+    fun findByOrganizationIdAndPlatformId(organizationId: Long, platformId: Long): Optional<IntegrationStatusEntity>
 }
