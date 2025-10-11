@@ -44,6 +44,8 @@ class IntegrationStatusService(
             platformId = patchIntegrationStatusDto.platformId ?: platformId
             active = patchIntegrationStatusDto.active ?: active
         }
+
+        integrationStatusRepo.saveAndFlush(integrationStatusEntity)
     }
 
     fun getIntegrationStatus(orgId: Long, platformId: Long, userId: String): Optional<IntegrationStatusEntity> {
