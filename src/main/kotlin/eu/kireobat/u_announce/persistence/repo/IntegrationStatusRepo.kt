@@ -10,4 +10,5 @@ import java.util.Optional
 interface IntegrationStatusRepo: JpaRepository<IntegrationStatusEntity, Long> {
     fun findByOrganizationIdAndPlatformIdAndActiveTrue(organizationId: Long, platformId: Long): Optional<IntegrationStatusEntity>
     fun findByOrganizationIdAndPlatformId(organizationId: Long, platformId: Long): Optional<IntegrationStatusEntity>
+    fun deleteAllByOrganizationId(organizationId: Long)
 }

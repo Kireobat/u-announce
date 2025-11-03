@@ -53,4 +53,9 @@ class IntegrationStatusService(
 
         return integrationStatusRepo.findByOrganizationIdAndPlatformId(organizationEntity.id, platformId)
     }
+
+    fun deleteIntegrationStatusByOrgId(orgId: Long, userId: String) {
+        val organizationEntity = organizationService.getOrganization(orgId, userId)
+        integrationStatusRepo.deleteAllByOrganizationId(organizationEntity.id)
+    }
 }

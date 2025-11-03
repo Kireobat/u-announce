@@ -8,4 +8,5 @@ import java.util.Optional
 @Repository
 interface SecretRepo: JpaRepository<SecretEntity, Long> {
     fun findByOrganizationIdAndPlatformId(organizationId: Long, platformId: Long): Optional<SecretEntity>
+    fun deleteAllByOrganizationId(organizationId: Long)
 }

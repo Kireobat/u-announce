@@ -133,4 +133,10 @@ class SecretService(
         secretRepo.deleteById(secretId)
 
     }
+
+    fun deleteSecretByOrgId(orgId: Long, userId: String) {
+        val organizationEntity = organizationService.getOrganization(orgId, userId)
+
+        secretRepo.deleteAllByOrganizationId(organizationEntity.id)
+    }
 }
