@@ -45,6 +45,14 @@
 		<postgresql.version>42.7.7</postgresql.version>
 		<spring-security.version>6.5.1</spring-security.version>
 		<keycloak-admin.version>26.0.5</keycloak-admin.version>
+		<kord.version>0.13.1</kord.version>
+		<slugify.version>3.0.7</slugify.version>
+		<ibm-icu4j.version>77.1</ibm-icu4j.version>
+		<kotlinx-coroutines.version>1.7.3</kotlinx-coroutines.version>
+		<kotlinx-io.version>0.3.5</kotlinx-io.version>
+		<ktor.version>2.3.12</ktor.version>
+		<properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+		<dotenv-java>3.0.0</dotenv-java>
 	</properties>
 	<dependencies>
 		<!-- Kotlin -->
@@ -209,15 +217,74 @@
 		<dependency>
 			<groupId>com.github.slugify</groupId>
 			<artifactId>slugify</artifactId>
-			<version>3.0.7</version>
+			<version>${slugify.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
-			<version>77.1</version>
+			<version>${ibm-icu4j.version}</version>
 		</dependency>
 
+		<!-- Coroutines -->
+
+
+		<dependency>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-core</artifactId>
+			<version>${kotlinx-coroutines.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-reactor</artifactId>
+			<version>${kotlinx-coroutines.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-io-core</artifactId>
+			<version>${kotlinx-io.version}</version>
+		</dependency>
+
+		<!-- Discord Integration -->
+
+		<dependency>
+			<groupId>dev.kord</groupId>
+			<artifactId>kord-core-jvm</artifactId>
+			<version>${kord.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.kord</groupId>
+			<artifactId>kord-common-jvm</artifactId>
+			<version>${kord.version}</version>
+		</dependency>
+
+		<!-- Force compatible Ktor versions for Kord -->
+		<dependency>
+			<groupId>io.ktor</groupId>
+			<artifactId>ktor-client-core-jvm</artifactId>
+			<version>${ktor.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ktor</groupId>
+			<artifactId>ktor-client-okhttp-jvm</artifactId>
+			<version>${ktor.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ktor</groupId>
+			<artifactId>ktor-io-jvm</artifactId>
+			<version>${ktor.version}</version>
+		</dependency>
+
+		<!-- Enviroment variables in tests -->
+		<dependency>
+			<groupId>io.github.cdimascio</groupId>
+			<artifactId>dotenv-java</artifactId>
+			<version>${dotenv-java}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -260,6 +327,25 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>${properties-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<goals>
+							<goal>read-project-properties</goal>
+						</goals>
+						<configuration>
+							<files>
+								<file>${project.basedir}/.env</file>
+							</files>
+							<quiet>true</quiet>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

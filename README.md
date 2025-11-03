@@ -8,6 +8,7 @@
     - [Prerequisite](#prerequisite)
       - [Devtools](#devtools)
       - [Other software needed](#other-software-needed)
+      - [Default logins](#default-logins)
     - [Steps](#steps)
     - [Add support for new platforms](#add-support-for-new-platforms)
       - [Create a new data class](#create-a-new-data-class)
@@ -32,6 +33,11 @@
 
 - Keycloak ([required setup](docs/keycloak.md))
 - MinIO ([required setup](docs/minio.md))
+
+#### Default logins
+
+- Keycloak admin: `admin` / `admin`
+- Keycloak user: `user` / `user`
 
 ### Steps
 

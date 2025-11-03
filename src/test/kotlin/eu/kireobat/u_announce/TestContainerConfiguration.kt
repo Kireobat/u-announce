@@ -1,5 +1,7 @@
 package eu.kireobat.u_announce
 
+import io.github.cdimascio.dotenv.Dotenv
+import jakarta.annotation.PostConstruct
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ApplicationContextInitializer
@@ -21,6 +23,20 @@ class TestContainerConfiguration {
 
         override fun initialize(configurableApplicationContext: ConfigurableApplicationContext) {
 
+            val dotenv = Dotenv.configure()
+                .directory("./")
+                .filename(".env")
+                .ignoreIfMissing()
+                .load()
+
+            // Get the values more safely
+            val keycloakClientId = dotenv.get("BACKEND_KEYCLOAK_CLIENT_ID")
+                ?: throw IllegalStateException("BACKEND_KEYCLOAK_CLIENT_ID not found in .env file")
+            val keycloakClientSecret = dotenv.get("BACKEND_KEYCLOAK_CLIENT_SECRET")
+                ?: throw IllegalStateException("BACKEND_KEYCLOAK_CLIENT_SECRET not found in .env file")
+            val masterKey = dotenv.get("MASTER_KEY")
+                ?: throw IllegalStateException("MASTER_KEY not found in .env file")
+
             TestPropertyValues.of(
                 // flyway property overrides
                 "spring.datasource.url=${postgresContainer.jdbcUrl}",
@@ -34,7 +50,14 @@ class TestContainerConfiguration {
                 "spring.flyway.password=postgres",
                 "spring.flyway.url=${postgresContainer.jdbcUrl}",
                 "spring.flyway.table=U_ANNOUNCE_SCHEMA_VERSION",
-                "spring.flyway.baseline-on-migrate=true"
+                "spring.flyway.baseline-on-migrate=true",
+
+                // Keycloak properties
+                "keycloak.admin.client-id=$keycloakClientId",
+                "keycloak.admin.client-secret=$keycloakClientSecret",
+
+                // Encryption key
+                "u-announce.security.master-key=$masterKey"
             ).applyTo(configurableApplicationContext.environment)
         }
     }

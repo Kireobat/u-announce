@@ -1,0 +1,32 @@
+package eu.kireobat.u_announce.persistence.entity
+
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.SequenceGenerator
+import jakarta.persistence.Table
+import java.time.ZonedDateTime
+
+@Entity
+@Table(name = "integration_status")
+data class IntegrationStatusEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "integrationStatusIdSeq")
+    @SequenceGenerator(name = "integrationStatusIdSeq", sequenceName = "integration_status_id_seq", allocationSize = 1)
+    var id: Long = 0L,
+
+    var organizationId: Long = 0L,
+
+    var platformId: Long = 0L,
+
+    var active: Boolean = false,
+
+    var keycloakCreatedByUserId: String = "",
+
+    var createdTime: ZonedDateTime = ZonedDateTime.now(),
+
+    var keycloakModifiedByUserId: String? = null,
+
+    var modifiedTime: ZonedDateTime? = null
+)
