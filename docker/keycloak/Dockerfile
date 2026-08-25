@@ -39,7 +39,7 @@ RUN chown -R keycloak:keycloak /opt/keycloak/data
 USER keycloak
 
 # Build Keycloak
-RUN /opt/keycloak/bin/kc.sh build
+RUN /opt/keycloak/bin/kc.sh build --health-enabled=true --metrics-enabled=true
 
 # Expose port
 EXPOSE 8080

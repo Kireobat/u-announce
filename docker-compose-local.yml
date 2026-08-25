@@ -10,6 +10,8 @@ services:
       - "5432:5432"
     labels:
       org.springframework.boot.service-connection: postgres
+    volumes:
+      - u-announce-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
@@ -22,7 +24,8 @@ services:
       context: .
       dockerfile: ./docker/keycloak/Dockerfile
     ports:
-      - "9000:8080"
+      - "9000:9000" # UI/API
+      - "9001:9001" # metrics
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
@@ -30,93 +33,35 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KC_HOSTNAME_STRICT_HTTPS=false
       - KC_HTTP_ENABLED=true
-    healthcheck:
-      test: [ "CMD-SHELL", "echo 'Keycloak health check starting...' && curl -f http://localhost:8080 && echo 'Health check passed' || (echo 'Health check failed' && exit 1)" ]
-      interval: 10s
-      timeout: 5s
-      retries: 50
-      start_period: 10s
-    depends_on:
-      - postgres
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_HTTP_PORT=9000
+      - KC_HTTP_MANAGEMENT_PORT=9001
 
-  minio:
-    container_name: u-announce-minio
-    image: quay.io/minio/minio:latest
+  rustfs:
+    container_name: u-announce-rustfs
+    build:
+      context: .
+      dockerfile: ./docker/rustfs/Dockerfile
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: root
-      MINIO_ROOT_PASSWORD: root1234
-
-      # Public URLs (important for console redirects and presigned URLs)
-      MINIO_SERVER_URL: http://localhost:9002
-      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
-
-      # OIDC (Keycloak) config
-      MINIO_IDENTITY_OPENID_CONFIG_URL: http://keycloak:8080/realms/u-announce/.well-known/openid-configuration
-      MINIO_IDENTITY_OPENID_CLIENT_ID: minio
-      MINIO_IDENTITY_OPENID_CLIENT_SECRET: minio-client-secret
-      MINIO_IDENTITY_OPENID_SCOPES: openid,profile,email,groups
-      MINIO_IDENTITY_OPENID_REDIRECT_URI: http://localhost:9001/oauth_callback
-      MINIO_IDENTITY_OPENID_DISPLAY_NAME: Keycloak
-      # we set a hardcoded "policy" claim in the client above
-      MINIO_IDENTITY_OPENID_CLAIM_NAME: policy
+      - RUSTFS_ACCESS_KEY=access-key # username
+      - RUSTFS_SECRET_KEY=secret-key # password
+      - RUSTFS_ADDRESS=0.0.0.0:9002
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9003
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_OBS_LOGGER_LEVEL=error
+      - RUSTFS_OBS_LOG_DIRECTORY=/var/log/rustfs/
     ports:
-      - "9002:9000" # S3 API
-      - "9001:9001" # Web console
+      - "9002:9002" # S3 api
+      - "9003:9003" # console
     volumes:
-      - u-announce-minio-data:/data
-    depends_on:
-      keycloak:
-        condition: service_healthy
-    command: server /data --console-address :9001
-    healthcheck:
-      test: [ "CMD-SHELL", "echo 'MinIO health check starting...' && curl -f http://localhost:9000/minio/health/live && echo 'MinIO health check passed' || (echo 'MinIO health check failed' && exit 1)" ]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      - u-announce-rustfs-data:/data
+      - u-announce-rustfs-logs:/var/log/rustfs
 
-  u-announce-minio-init:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy  # Wait for MinIO to be healthy
-    entrypoint: [ "/bin/sh","-c" ]
-    command: |
-      set -eux
-      echo "Waiting for MinIO to be ready..."
-      
-      # Register alias with retry
-      until mc alias set myminio http://minio:9000 "root" "root1234"; do
-        echo "MinIO not ready yet, waiting..."
-        sleep 5
-      done
-      
-      echo "🚀 Starting MinIO initialization..."
-      
-      # Create bucket
-      mc mb -p myminio/organizations || true
-      echo "✓ Created organizations bucket"
-      
-      # Create policies if files exist
-      if [ -f /init/policies/org-access.json ]; then
-        mc admin policy create myminio org-access /init/policies/org-access.json || true
-        echo "✓ Created org-access policy"
-      else
-        echo "⚠️  Policy file /init/policies/org-access.json not found"
-      fi
-      
-      if [ -f /init/policies/org-example-org.json ]; then
-        mc admin policy create myminio org-example-org /init/policies/org-example-org.json || true
-        echo "✓ Created org-example-org policy"
-      else
-        echo "⚠️  Policy file /init/policies/org-example-org.json not found"
-      fi
-      
-      echo "🎉 MinIO initialization completed successfully!"
-    environment:
-      MINIO_ROOT_USER: root
-      MINIO_ROOT_PASSWORD: root1234
-    volumes:
-      - ./init:/init
+
 volumes:
-  u-announce-minio-data:
+  u-announce-rustfs-data:
+  u-announce-rustfs-logs:
+  u-announce-postgres-data:
