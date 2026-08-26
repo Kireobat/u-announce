@@ -59,7 +59,51 @@ services:
     volumes:
       - u-announce-rustfs-data:/data
       - u-announce-rustfs-logs:/var/log/rustfs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh", "-ec",
+          "host=\"$${RUSTFS_HEALTHCHECK_HOST:-127.0.0.1}\"; scheme=\"http\"; set -- -fsS; \
+              if [ -n \"$${RUSTFS_TLS_PATH:-}\" ]; then \
+                scheme=\"https\"; \
+                ca_path=\"$${RUSTFS_HEALTHCHECK_CA:-}\"; \
+                if [ -z \"$${ca_path}\" ] && [ -f /opt/tls/ca.crt ]; then ca_path=/opt/tls/ca.crt; fi; \
+                case \"$${host}\" in 127.0.0.1|localhost) strict_host=false ;; *) strict_host=true ;; esac; \
+                if [ \"$${strict_host}\" = true ] && [ -n \"$${ca_path}\" ]; then \
+                  set -- \"$${@}\" --cacert \"$${ca_path}\" --resolve \"$${host}:9002:127.0.0.1\" --resolve \"$${host}:9003:127.0.0.1\"; \
+                else \
+                  set -- \"$${@}\" -k; \
+                fi; \
+              fi; \
+              curl \"$${@}\" \"$${scheme}://$${host}:9002/health\" && \
+              curl \"$${@}\" \"$${scheme}://$${host}:9003/rustfs/console/health\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  rustfs-init:
+    container_name: rustfs-init
+    image: rustfs/rc:v0.1.31
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      - RUSTFS_ACCESS_KEY=access-key
+      - RUSTFS_SECRET_KEY=secret-key
+    entrypoint: >
+      /bin/sh -c "
+      until rc alias set local http://rustfs:9002 access-key secret-key; do sleep 2; done &&
+      
+      rc bucket create local/u-announce-media && 
+      
+      rc bucket lifecycle rule add local/u-announce-media --prefix 'active/' --expiry-days 30 && 
+      rc bucket lifecycle rule add local/u-announce-media --prefix 'pending/' --expiry-days 90 && 
+      
+      exit 0
+      "
 
 volumes:
   u-announce-rustfs-data:

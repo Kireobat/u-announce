@@ -31,7 +31,8 @@
 #### Other software needed
 
 - Keycloak ([required setup](docs/keycloak.md))
-- MinIO ([required setup](docs/minio.md))
+- RustFS ([required setup](docs/rustfs.md))
+- Postgres ([required setup](docs/postgres.md))
 
 ### Steps
 
@@ -83,17 +84,36 @@ Now you are ready to write the rest of your new integration
 To run the program in docker with the prod profile, you will need the following variables (with example data):
 
 ```dotenv
+# Keycloak
 KEYCLOAK_REALM=my-realm
 KEYCLOAK_SERVER_URL=https://keycloak.example.com
 FRONTEND_KEYCLOAK_CLIENT_ID=frontend-client-id
-FRONTEND_SERVER_URL=https://example.com
 BACKEND_KEYCLOAK_CLIENT_ID=backend-client-id
 BACKEND_KEYCLOAK_CLIENT_SECRET=verySecretSecret
+
+# Postgres
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres.example.com:5432/postgres
+SPRING_DATASOURCE_USER=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+
+# RustFS
+RUSTFS_URL=https://s3.example.com
+RUSTFS_ACCESS_KEY=access-key
+RUSTFS_SECRET_KEY=secret-key
+
+# The frontend and backend urls
+FRONTEND_SERVER_URL=https://example.com
 BACKEND_SERVER_URL=https://api.example.com
+
+# Master key for secret encryption
 MASTER_KEY=qUoQO5W7KwbCGiZh/VucOsQpdg+9B53n5VXkfMY9HF8=
 ```
 
 You will also need to bind any host port to container port `8080`
+
+### Dependencies
+
+To run this app outside local developement you need external Postgres, Keycloak and RustFS deployments. For configuration of them see the [/docs](/docs) folder.
 
 ## ideas
 

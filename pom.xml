@@ -53,7 +53,7 @@
 		<ktor.version>2.3.12</ktor.version>
 		<properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
 		<dotenv-java.version>3.0.0</dotenv-java.version>
-        <minio-admin.version>8.5.17</minio-admin.version>
+        <aws-sdk.version>2.25.27</aws-sdk.version>
 	</properties>
 	<dependencies>
 		<!-- Kotlin -->
@@ -214,12 +214,12 @@
 			<version>${keycloak-admin.version}</version>
 		</dependency>
 
-        <!-- Minio SDK -->
-        <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio-admin</artifactId>
-            <version>${minio-admin.version}</version>
-        </dependency>
+        <!-- AWS SDK -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws-sdk.version}</version>
+		</dependency>
 
 		<!-- text processing -->
 		<dependency>
