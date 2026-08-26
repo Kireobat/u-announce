@@ -2,6 +2,7 @@ package eu.kireobat.u_announce.service
 
 import eu.kireobat.u_announce.api.dto.CreateSecretDto
 import eu.kireobat.u_announce.api.dto.SecretDto
+import eu.kireobat.u_announce.common.Constants
 import eu.kireobat.u_announce.persistence.entity.SecretEntity
 import eu.kireobat.u_announce.persistence.repo.SecretRepo
 import org.springframework.http.HttpStatus
@@ -58,7 +59,7 @@ class SecretService(
 
         val plaintextOrgKey = encryptionService.decrypt(organizationEntity.organizationKey)
 
-        val orgKeySpec = SecretKeySpec(plaintextOrgKey, "AES")
+        val orgKeySpec = SecretKeySpec(plaintextOrgKey, Constants().ENCRYPTION_ALGO)
 
         try {
             val decryptedCredentialsBytes = encryptionService.decrypt(secretEntity.encryptedCredential, orgKeySpec)

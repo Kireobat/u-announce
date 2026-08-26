@@ -84,27 +84,6 @@ services:
       retries: 3
       start_period: 40s
 
-  rustfs-init:
-    container_name: rustfs-init
-    image: rustfs/rc:v0.1.31
-    depends_on:
-      rustfs:
-        condition: service_healthy
-    environment:
-      - RUSTFS_ACCESS_KEY=access-key
-      - RUSTFS_SECRET_KEY=secret-key
-    entrypoint: >
-      /bin/sh -c "
-      until rc alias set local http://rustfs:9002 access-key secret-key; do sleep 2; done &&
-      
-      rc bucket create local/u-announce-media && 
-      
-      rc bucket lifecycle rule add local/u-announce-media --prefix 'active/' --expiry-days 30 && 
-      rc bucket lifecycle rule add local/u-announce-media --prefix 'pending/' --expiry-days 90 && 
-      
-      exit 0
-      "
-
 volumes:
   u-announce-rustfs-data:
   u-announce-rustfs-logs:

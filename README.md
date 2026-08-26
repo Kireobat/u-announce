@@ -97,9 +97,9 @@ SPRING_DATASOURCE_USER=postgres
 SPRING_DATASOURCE_PASSWORD=postgres
 
 # RustFS
-RUSTFS_URL=https://s3.example.com
-RUSTFS_ACCESS_KEY=access-key
-RUSTFS_SECRET_KEY=secret-key
+S3_URL=https://s3.example.com
+S3_ACCESS_KEY=access-key
+S3_SECRET_KEY=secret-key
 
 # The frontend and backend urls
 FRONTEND_SERVER_URL=https://example.com

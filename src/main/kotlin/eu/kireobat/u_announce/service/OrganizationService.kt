@@ -66,6 +66,17 @@ class OrganizationService(
         }
     }
 
+    fun getOrganization(slug: String, userId: String): OrganizationEntity {
+
+        val organizationEntity = organizationRepo.findBySlug(slug).orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND,"Could not find organization with slug ($slug)") }
+
+        if (isInOrganization(organizationEntity, userId)) {
+            return organizationEntity
+        } else {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this organization ($slug)")
+        }
+    }
+
     fun isInOrganization(organizationEntity: OrganizationEntity, userId: String): Boolean {
         return keycloakService.getGroupsForUser(userId)
             .filter { groupRepresentation ->

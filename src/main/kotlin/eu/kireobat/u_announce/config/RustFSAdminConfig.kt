@@ -5,11 +5,14 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import java.net.URI
 
 @Configuration
-data class RustFSProperties(
+data class S3Properties(
     var url: String = "",
     var accessKey: String = "",
     var secretKey: String = ""
@@ -17,20 +20,41 @@ data class RustFSProperties(
 
 // https://rustfs.org/developer/sdk/java
 
-class RustFSConfig(private val rustFSProperties: RustFSProperties) {
+class RustFSConfig(private val s3Properties: S3Properties) {
 
     @Bean
     fun rustFSAdminClient(): S3Client {
         return S3Client.builder()
-            .endpointOverride(URI.create(rustFSProperties.url))
+            .endpointOverride(URI.create(s3Properties.url)) // RustFS address
+            .region(Region.EU_WEST_1) // RustFS does not validate regions
             .credentialsProvider(
                 StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(
-                        rustFSProperties.accessKey,
-                        rustFSProperties.secretKey)
+                        s3Properties.accessKey,
+                        s3Properties.secretKey)
                 )
             )
-            .forcePathStyle(true)
+            .forcePathStyle(true) // Required for RustFS compatibility
+            .build()
+    }
+
+    @Bean
+    fun rustFsPresigner(): S3Presigner {
+        return S3Presigner.builder()
+            .endpointOverride(URI.create(s3Properties.url)) // RustFS address
+            .region(Region.EU_WEST_1) // RustFS does not validate regions
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(
+                        s3Properties.accessKey,
+                        s3Properties.secretKey)
+                )
+            )
+            .serviceConfiguration(
+                S3Configuration.builder()
+                    .pathStyleAccessEnabled(true)
+                    .build()
+            )
             .build()
     }
 }
@@ -38,19 +62,20 @@ class RustFSConfig(private val rustFSProperties: RustFSProperties) {
 @Configuration
 class RustFSAdminConfig {
 
-    @Value($$"${rustfs.url}")
+    @Value($$"${s3.url}")
     private lateinit var serverUrl: String
 
-    @Value($$"${rustfs.access-key}")
+    @Value($$"${s3.access-key}")
     private lateinit var accessKey: String
 
-    @Value($$"${rustfs.secret-key}")
+    @Value($$"${s3.secret-key}")
     private lateinit var secretKey: String
 
     @Bean
     fun rustFSAdminClient(): S3Client {
         return S3Client.builder()
-            .endpointOverride(URI.create(serverUrl))
+            .endpointOverride(URI.create(serverUrl)) // RustFS address
+            .region(Region.EU_WEST_1) // RustFS does not validate regions
             .credentialsProvider(
                 StaticCredentialsProvider.create(
                     AwsBasicCredentials.create(
@@ -58,7 +83,27 @@ class RustFSAdminConfig {
                         secretKey)
                 )
             )
-            .forcePathStyle(true)
+            .forcePathStyle(true) // Required for RustFS compatibility
+            .build()
+    }
+
+    @Bean
+    fun rustFsPresigner(): S3Presigner {
+        return S3Presigner.builder()
+            .endpointOverride(URI.create(serverUrl)) // RustFS address
+            .region(Region.EU_WEST_1) // RustFS does not validate regions
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(
+                        accessKey,
+                        secretKey)
+                )
+            )
+            .serviceConfiguration(
+                S3Configuration.builder()
+                    .pathStyleAccessEnabled(true)
+                    .build()
+            )
             .build()
     }
 }

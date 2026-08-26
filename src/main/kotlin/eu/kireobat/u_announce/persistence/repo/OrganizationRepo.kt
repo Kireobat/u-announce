@@ -8,4 +8,5 @@ import java.util.Optional
 @Repository
 interface OrganizationRepo: JpaRepository<OrganizationEntity, Long> {
     fun findByDisplayName(displayName: String): Optional<OrganizationEntity>
+    fun findBySlug(slug: String): Optional<OrganizationEntity>
 }
