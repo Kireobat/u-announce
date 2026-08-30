@@ -18,6 +18,7 @@ The data structure is designed to be extensible, making adding support for new p
     - [Prerequisite](#prerequisite)
       - [Devtools](#devtools)
       - [Other software needed](#other-software-needed)
+      - [Default logins](#default-logins)
     - [Steps](#steps)
     - [Add support for new platforms](#add-support-for-new-platforms)
       - [Create a new data class](#create-a-new-data-class)
@@ -81,6 +82,11 @@ To run this app outside local developement you need external Postgres, Keycloak 
 - Keycloak ([required setup](docs/keycloak.md))
 - RustFS ([required setup](docs/rustfs.md))
 - Postgres ([required setup](docs/postgres.md))
+
+#### Default logins
+
+- Keycloak admin: `admin` / `admin`
+- Keycloak user: `user` / `user`
 
 ### Steps
 

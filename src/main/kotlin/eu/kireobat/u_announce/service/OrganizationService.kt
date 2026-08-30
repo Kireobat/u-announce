@@ -4,7 +4,9 @@ import eu.kireobat.u_announce.api.dto.CreateOrganizationDto
 import eu.kireobat.u_announce.api.dto.getSlug
 import eu.kireobat.u_announce.api.dto.validate
 import eu.kireobat.u_announce.persistence.entity.OrganizationEntity
+import eu.kireobat.u_announce.persistence.repo.IntegrationStatusRepo
 import eu.kireobat.u_announce.persistence.repo.OrganizationRepo
+import eu.kireobat.u_announce.persistence.repo.SecretRepo
 import org.keycloak.admin.client.resource.RealmResource
 import org.keycloak.representations.idm.GroupRepresentation
 import org.springframework.beans.factory.annotation.Value
@@ -18,6 +20,8 @@ class OrganizationService(
     private val organizationRepo: OrganizationRepo,
     private val encryptionService: EncryptionService,
     private val keycloakService: KeycloakService,
+    private val secretRepo: SecretRepo,
+    private val integrationStatusRepo: IntegrationStatusRepo
 ) {
 
     fun createOrganization(createOrganizationDto: CreateOrganizationDto, userId: String) {
@@ -82,5 +86,15 @@ class OrganizationService(
             .filter { groupRepresentation ->
                 groupRepresentation.id == organizationEntity.keycloakGroupId
             }.size == 1
+    }
+
+    fun deleteOrganization(orgId: Long, userId: String) {
+        val organizationEntity = getOrganization(orgId, userId)
+
+        integrationStatusRepo.deleteAllByOrganizationId(organizationEntity.id)
+
+        secretRepo.deleteAllByOrganizationId(orgId)
+
+        organizationRepo.deleteById(organizationEntity.id)
     }
 }

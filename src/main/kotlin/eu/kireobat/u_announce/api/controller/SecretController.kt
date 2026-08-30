@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -30,6 +31,13 @@ class SecretController(private val secretService: SecretService) {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/secrets/{secretId}")
     fun getSecret(@PathVariable secretId: Long): ResponseEntity<SecretDto> {
-        return ResponseEntity.ok(secretService.getSecret(secretId, AuthUtil().getUserIdFromAuth()))
+        return ResponseEntity.ok(secretService.getSecretById(secretId, AuthUtil().getUserIdFromAuth()))
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/secrets/{secretId}")
+    fun deleteSecret(@PathVariable secretId: Long): ResponseEntity<UAnnounceResponseDto> {
+        secretService.deleteSecretById(secretId, AuthUtil().getUserIdFromAuth())
+        return ResponseEntity.ok(UAnnounceResponseDto(true, ZonedDateTime.now(), HttpStatus.OK, "Secret deleted"))
     }
 }
