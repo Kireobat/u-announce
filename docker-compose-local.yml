@@ -1,23 +1,31 @@
 services:
   postgres:
+    container_name: u-announce-postgres
     build:
       context: .
       dockerfile: ./docker/postgres/Dockerfile
     environment:
       - 'POSTGRES_PASSWORD=postgres'
-    container_name: u-announce-postgres
     ports:
       - "5432:5432"
     labels:
       org.springframework.boot.service-connection: postgres
+    volumes:
+      - u-announce-postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   keycloak:
+    container_name: u-announce-keycloak
     build:
       context: .
       dockerfile: ./docker/keycloak/Dockerfile
     ports:
-      - "9000:8080"
+      - "9000:9000" # UI/API
+      - "9001:9001" # metrics
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
@@ -25,4 +33,58 @@ services:
       - KC_HOSTNAME_STRICT=false
       - KC_HOSTNAME_STRICT_HTTPS=false
       - KC_HTTP_ENABLED=true
-    container_name: u-announce-keycloak
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_HTTP_PORT=9000
+      - KC_HTTP_MANAGEMENT_PORT=9001
+
+  rustfs:
+    container_name: u-announce-rustfs
+    build:
+      context: .
+      dockerfile: ./docker/rustfs/Dockerfile
+    restart: unless-stopped
+    environment:
+      - RUSTFS_ACCESS_KEY=access-key # username
+      - RUSTFS_SECRET_KEY=secret-key # password
+      - RUSTFS_ADDRESS=0.0.0.0:9002
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9003
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_OBS_LOGGER_LEVEL=error
+      - RUSTFS_OBS_LOG_DIRECTORY=/var/log/rustfs/
+    ports:
+      - "9002:9002" # S3 api
+      - "9003:9003" # console
+    volumes:
+      - u-announce-rustfs-data:/data
+      - u-announce-rustfs-logs:/var/log/rustfs
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh", "-ec",
+          "host=\"$${RUSTFS_HEALTHCHECK_HOST:-127.0.0.1}\"; scheme=\"http\"; set -- -fsS; \
+              if [ -n \"$${RUSTFS_TLS_PATH:-}\" ]; then \
+                scheme=\"https\"; \
+                ca_path=\"$${RUSTFS_HEALTHCHECK_CA:-}\"; \
+                if [ -z \"$${ca_path}\" ] && [ -f /opt/tls/ca.crt ]; then ca_path=/opt/tls/ca.crt; fi; \
+                case \"$${host}\" in 127.0.0.1|localhost) strict_host=false ;; *) strict_host=true ;; esac; \
+                if [ \"$${strict_host}\" = true ] && [ -n \"$${ca_path}\" ]; then \
+                  set -- \"$${@}\" --cacert \"$${ca_path}\" --resolve \"$${host}:9002:127.0.0.1\" --resolve \"$${host}:9003:127.0.0.1\"; \
+                else \
+                  set -- \"$${@}\" -k; \
+                fi; \
+              fi; \
+              curl \"$${@}\" \"$${scheme}://$${host}:9002/health\" && \
+              curl \"$${@}\" \"$${scheme}://$${host}:9003/rustfs/console/health\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  u-announce-rustfs-data:
+  u-announce-rustfs-logs:
+  u-announce-postgres-data:

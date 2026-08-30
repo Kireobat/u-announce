@@ -1,9 +1,19 @@
 # uAnnounce
 
+uAnnounce is a universal announcement program that seeks to simplify the process of making announcement by converting 
+the whole process into a single button press.
+
+This project is also to show my knowledge of multiple technologies related to development. 
+It showcases Keycloak, Postgres, S3 storage, encryption, docker, ci/cd and integration with multiple external services.
+The data structure is designed to be extensible, making adding support for new platforms rather straight forward.
+
+
 ## Table of Contents
 
 - [uAnnounce](#uannounce)
   - [Table of Contents](#table-of-contents)
+  - [Running in prod](#running-in-prod)
+    - [Docker](#docker)
   - [Local development](#local-development)
     - [Prerequisite](#prerequisite)
       - [Devtools](#devtools)
@@ -14,9 +24,47 @@
       - [Create a new data class](#create-a-new-data-class)
       - [Update the platform table](#update-the-platform-table)
       - [Write other code](#write-other-code)
-  - [Running in prod](#running-in-prod)
-    - [Docker](#docker)
+  
   - [ideas](#ideas)
+
+## Running in prod
+
+### Docker
+
+To run the program in docker with the prod profile, you will need the following variables (with example data):
+
+```dotenv
+# Keycloak
+KEYCLOAK_REALM=my-realm
+KEYCLOAK_SERVER_URL=https://keycloak.example.com
+FRONTEND_KEYCLOAK_CLIENT_ID=frontend-client-id
+BACKEND_KEYCLOAK_CLIENT_ID=backend-client-id
+BACKEND_KEYCLOAK_CLIENT_SECRET=verySecretSecret
+
+# Postgres
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres.example.com:5432/postgres
+SPRING_DATASOURCE_USER=postgres
+SPRING_DATASOURCE_PASSWORD=postgres
+
+# RustFS
+S3_URL=https://s3.example.com
+S3_ACCESS_KEY=access-key
+S3_SECRET_KEY=secret-key
+
+# The frontend and backend urls
+FRONTEND_SERVER_URL=https://example.com
+BACKEND_SERVER_URL=https://api.example.com
+
+# Master key for secret encryption
+MASTER_KEY=qUoQO5W7KwbCGiZh/VucOsQpdg+9B53n5VXkfMY9HF8=
+```
+
+You will also need to bind any host port to container port `8080`
+
+### Dependencies
+
+To run this app outside local developement you need external Postgres, Keycloak and RustFS deployments. For configuration of them see the [/docs](/docs) folder.
+
 
 ## Local development
 
@@ -32,7 +80,8 @@
 #### Other software needed
 
 - Keycloak ([required setup](docs/keycloak.md))
-- MinIO ([required setup](docs/minio.md))
+- RustFS ([required setup](docs/rustfs.md))
+- Postgres ([required setup](docs/postgres.md))
 
 #### Default logins
 
@@ -81,25 +130,6 @@ insert into u_announce.platform (slug, display_name, class_name) values ('your-p
 #### Write other code
 
 Now you are ready to write the rest of your new integration
-
-## Running in prod
-
-### Docker
-
-To run the program in docker with the prod profile, you will need the following variables (with example data):
-
-```dotenv
-KEYCLOAK_REALM=my-realm
-KEYCLOAK_SERVER_URL=https://keycloak.example.com
-FRONTEND_KEYCLOAK_CLIENT_ID=frontend-client-id
-FRONTEND_SERVER_URL=https://example.com
-BACKEND_KEYCLOAK_CLIENT_ID=backend-client-id
-BACKEND_KEYCLOAK_CLIENT_SECRET=verySecretSecret
-BACKEND_SERVER_URL=https://api.example.com
-MASTER_KEY=qUoQO5W7KwbCGiZh/VucOsQpdg+9B53n5VXkfMY9HF8=
-```
-
-You will also need to bind any host port to container port `8080`
 
 ## ideas
 
