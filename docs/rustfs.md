@@ -27,11 +27,13 @@ Set lifecycle policies to ensure that old data doesn't clog up the storage.
 ````
 /u-announce-media
     /active
-        /org-{orgSlug}-YYYYMMDD_HHmmss-
-            /video1.mp4
-            /image39.avif
+        /{orgSlug}
+            /YYYYMMDD_HHmmss-a3A4
+                /kajsdhf2347sdfh123hj.mp4
+                /kajsdhf2347sdfh123hj.avif
     /pending
-        /org-{orgSlug}-YYYYMMDD_HHmmss-
-            /unreleased3.mov
-            /tobeannounced63.png
+        /{orgSlug}
+            /YYYYMMDD_HHmmss-a3A4
+                /kajsdhf2347sdfh123hj.mov
+                /kajsdhf2347sdfh123hj.png
 ````
